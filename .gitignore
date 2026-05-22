@@ -1,0 +1,25 @@
+# LaTeX build artifacts
+*.aux
+*.log
+*.out
+*.toc
+*.fls
+*.fdb_latexmk
+*.synctex.gz
+
+# Python/cache/env artifacts
+__pycache__/
+*.py[cod]
+.venv/
+.python-version
+uv.lock
+
+# Extracted app/resource images and local reference dumps
+page/
+Epoch1/
+freshie_roadmap/
+
+# Local scratch/context files
+1
+doubts
+app

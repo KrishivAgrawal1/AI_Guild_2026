@@ -1,0 +1,29 @@
+Part 4: Explaining the Pixel Drain and CropAndConcat
+
+For an unpadded 2D convolution, the output spatial size is given by:
+
+output_size = input_size - kernel_size + 1
+
+Here, each convolution uses a 3x3 kernel with no padding. Therefore, each convolution reduces both height and width by:
+
+3 - 1 = 2 pixels
+
+Starting with a 572x572 image:
+
+After the first 3x3 unpadded convolution:
+572 - 3 + 1 = 570
+So the tensor becomes 570x570.
+
+After the second 3x3 unpadded convolution:
+570 - 3 + 1 = 568
+So the tensor becomes 568x568.
+
+Therefore, the block maps:
+
+572x572 -> 570x570 -> 568x568
+
+This is not a PyTorch bug. It happens because the convolutional kernel cannot be centered on the border pixels unless padding is added. Since the original U-Net uses valid/unpadded convolutions, border pixels are progressively lost at every convolution. This is the "Pixel Drain."
+
+This creates a problem later during skip connections. In U-Net, feature maps from the contracting path are concatenated with upsampled feature maps in the expanding path. But because unpadded convolutions keep shrinking the spatial dimensions, the two tensors that need to be concatenated often do not have the same height and width.
+
+A simple concatenation requires matching spatial dimensions. If one tensor is larger than the other, PyTorch cannot concatenate them along the channel dimension directly. Therefore, the larger feature map from the contracting path has to be cropped to match the size of the upsampled feature map. This is why the original U-Net needs a custom CropAndConcat function.
